@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Spinner } from "@/components/spinner";
 import { SearchCommand } from "@/components/search-command";
 
-import { Navigation } from "./_components/navigation";
+import { Navigation, useNavigation } from "./_components/navigation";
 
 const MainLayout = ({
   children
@@ -27,12 +27,17 @@ const MainLayout = ({
     return redirect("/");
   }
 
+  const [navigation, navbar] = useNavigation();
+
   return ( 
-    <div className="h-full flex dark:bg-[#1F1F1F]">
-      <Navigation />
-      <main className="flex-1 h-full overflow-y-auto">
+    <div className="h-full flex dark:bg-[#1F1F1F] overflow-hidden">
+      {navigation as JSX.Element}
+      <main className="flex-1 h-full">
         <SearchCommand />
-        {children}
+        {navbar as JSX.Element}
+        <div className="h-full overflow-y-auto">
+          {children}
+        </div>
       </main>
     </div>
    );

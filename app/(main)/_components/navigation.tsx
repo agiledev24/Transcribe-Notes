@@ -10,7 +10,7 @@ import {
   Trash
 } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { ElementRef, useEffect, useRef, useState } from "react";
+import { ElementRef, useEffect, useMemo, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
@@ -31,7 +31,7 @@ import { DocumentList } from "./document-list";
 import { TrashBox } from "./trash-box";
 import { Navbar } from "./navbar";
 
-export const Navigation = () => {
+export const useNavigation = () => {
   const router = useRouter();
   const settings = useSettings();
   const search = useSearch();
@@ -99,7 +99,7 @@ export const Navigation = () => {
       sidebarRef.current.style.width = isMobile ? "100%" : "240px";
       navbarRef.current.style.setProperty(
         "width",
-        isMobile ? "0" : "calc(100% - 240px)"
+        isMobile ? "0" : "calc(100%)"
       );
       navbarRef.current.style.setProperty(
         "left",
@@ -132,8 +132,8 @@ export const Navigation = () => {
     });
   };
 
-  return (
-    <>
+  const navigation = useMemo(() => {
+    return (
       <aside
         ref={sidebarRef}
         className={cn(
@@ -196,10 +196,15 @@ export const Navigation = () => {
           className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
         />
       </aside>
+    )
+  }, [isMobile, isResetting]);
+
+  const navbar = useMemo(() => {
+    return (
       <div
         ref={navbarRef}
         className={cn(
-          "absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
+          "left-60 w-[calc(100%-240px)]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "left-0 w-full"
         )}
@@ -215,6 +220,8 @@ export const Navigation = () => {
           </nav>
         )}
       </div>
-    </>
-  )
+    )
+  }, [isResetting, isMobile, isCollapsed]);
+
+  return [navigation, navbar];
 }

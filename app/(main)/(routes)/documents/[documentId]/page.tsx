@@ -18,6 +18,7 @@ import { IconPicker } from "@/components/icon-picker";
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import VoiceItem from "@/app/(main)/_components/voice-item";
+import DetailsSection from "@/app/(main)/_components/details-section";
 
 interface DocumentIdPageProps {
   params: {
@@ -29,8 +30,6 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({
   params
 }: DocumentIdPageProps) => {
-  const Editor = useMemo(() => dynamic(() => import("@/components/editor"), { ssr: false }), []);
- 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { finalTranscription } = useContext(TranscriptionContext);
@@ -111,42 +110,45 @@ const DocumentIdPage = ({
   
   return (
     <TranscriptionProvider>
-      <div className="page">
-        <Cover url={document.coverImage} />
-        {!!document.icon && (
-            <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
-              <IconPicker onChange={() => {}}>
-                <p className="text-6xl hover:opacity-75 transition">
-                  {document.icon}
-                </p>
-              </IconPicker>
-            </div>
-        )}
-        <div className="body flex flex-col gap-y-[16px]">
-          <Toolbar initialData={document} />
-          <Tabs>
-            <TabList>
-              <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Transcription</div></Tab>
-              <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Summary</div></Tab>
-            </TabList>
-
-            <TabPanel>
-              <div className="flex flex-col gap-[16px]">
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
-                <VoiceItem/>
+      <div className="flex h-full">
+        <div className="page">
+          <Cover url={document.coverImage} />
+          {!!document.icon && (
+              <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
+                <IconPicker onChange={() => {}}>
+                  <p className="text-6xl hover:opacity-75 transition">
+                    {document.icon}
+                  </p>
+                </IconPicker>
               </div>
-            </TabPanel>
-            <TabPanel>
-              <h2>Any content 2</h2>
-            </TabPanel>
-          </Tabs>
+          )}
+          <div className="body flex flex-col gap-y-[16px]">
+            <Toolbar initialData={document} />
+            <Tabs>
+              <TabList>
+                <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Transcription</div></Tab>
+                <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Summary</div></Tab>
+              </TabList>
+
+              <TabPanel>
+                <div className="flex flex-col gap-[16px]">
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                  <VoiceItem/>
+                </div>
+              </TabPanel>
+              <TabPanel>
+                <h2>Any content 2</h2>
+              </TabPanel>
+            </Tabs>
+          </div>
         </div>
+        <DetailsSection/>
       </div>
     </TranscriptionProvider>
   );
