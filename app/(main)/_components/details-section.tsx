@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
-import * as Tabs from '@radix-ui/react-tabs';
+import * as Tabs from "@radix-ui/react-tabs";
 import dynamic from "next/dynamic";
 import Checkbox from "./checkbox";
 
@@ -30,7 +30,6 @@ const DetailsSection = () => {
   };
 
   const resetWidth = () => {
-    console.log("resetWidth function is called", sidebarRef.current);
     if (sidebarRef.current) {
       setIsCollapsed(false);
       setIsResetting(true);
@@ -75,15 +74,25 @@ const DetailsSection = () => {
           <ChevronsRight className="h-6 w-6" />
         </div>
         <Tabs.Root className="TabsRoot" defaultValue="insight">
-          <Tabs.List className="TabsList" >
-            <Tabs.Trigger className="TabsTrigger text-sm font-bold text-gray-500" value="insight">Insight</Tabs.Trigger>
-            <Tabs.Trigger className="TabsTrigger text-sm font-bold text-gray-500" value="actions">Action Items</Tabs.Trigger>
+          <Tabs.List className="TabsList">
+            <Tabs.Trigger
+              className="TabsTrigger text-sm font-bold text-gray-500"
+              value="insight"
+            >
+              Insight
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              className="TabsTrigger text-sm font-bold text-gray-500"
+              value="actions"
+            >
+              Action Items
+            </Tabs.Trigger>
           </Tabs.List>
 
           <div>
             <Tabs.Content className="TabsContent" value="insight">
               <div className="py-3">
-                <Editor onChange={() => {}}/>
+                <Editor onChange={() => {}} />
               </div>
             </Tabs.Content>
 

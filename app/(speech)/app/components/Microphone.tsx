@@ -1,19 +1,17 @@
 // Microphone.tsx
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useRecordVoice } from "@/app/(speech)/hooks/useRecordVoice";
 import { IconMicrophone } from "@/app/(speech)/app/components/IconMicrophone";
 import TranscriptionContext from "./TranscriptionContext";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from '@/convex/_generated/dataModel';
+import { Id } from "@/convex/_generated/dataModel";
 import SummarizationComponent from "./SummarizationComponent";
-
-
 
 declare global {
   interface Window {
-      webkitSpeechRecognition: any;
-      SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+    SpeechRecognition: any;
   }
 }
 
@@ -25,7 +23,10 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
   const [, setSummarizationResult] = useState("");
 
   // Assuming you have a query defined in your Convex functions to fetch the summarization result
-  const fetchedSummarizationResult = useQuery(api.documents.getSummarizationResult, documentId ? { id: documentId as Id<"documents"> } : "skip");
+  const fetchedSummarizationResult = useQuery(
+    api.documents.getSummarizationResult,
+    documentId ? { id: documentId as Id<"documents"> } : "skip"
+  );
 
   useEffect(() => {
     if (fetchedSummarizationResult) {
@@ -34,18 +35,25 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
     }
   }, [fetchedSummarizationResult]);
 
-  
   const [isRecording, setIsRecording] = useState(false);
   const accumulatedFinalTranscript = useRef("");
-  const { finalTranscription, setLiveTranscription, setFinalTranscription, generateNewSessionId } = useContext(TranscriptionContext);
+  const {
+    finalTranscription,
+    setLiveTranscription,
+    setFinalTranscription,
+    generateNewSessionId,
+  } = useContext(TranscriptionContext);
   const recognitionActive = useRef(false);
 
-  const { startRecording, stopRecording } = useRecordVoice(documentId,setFinalTranscription);
-  
+  const { startRecording, stopRecording } = useRecordVoice(
+    documentId,
+    setFinalTranscription
+  );
 
-  const recognition = typeof window !== 'undefined' ? new (window.webkitSpeechRecognition || window.SpeechRecognition)() : null;
-
-  
+  const recognition =
+    typeof window !== "undefined"
+      ? new (window.webkitSpeechRecognition || window.SpeechRecognition)()
+      : null;
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
@@ -67,29 +75,29 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
       }
     }
   };
-  
-
-
 
   useEffect(() => {
     if (recognition) {
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = 'es-MX';
+      recognition.lang = "es-MX";
 
       recognition.onresult = (event: any) => {
         if (!recognitionActive.current) return;
 
-        let interimTranscript = '';
+        let interimTranscript = "";
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            accumulatedFinalTranscript.current += event.results[i][0].transcript;
+            accumulatedFinalTranscript.current +=
+              event.results[i][0].transcript;
           } else {
             interimTranscript += event.results[i][0].transcript;
           }
         }
 
-        setLiveTranscription(accumulatedFinalTranscript.current + interimTranscript);
+        setLiveTranscription(
+          accumulatedFinalTranscript.current + interimTranscript
+        );
       };
 
       recognition.onend = () => {
@@ -98,15 +106,11 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
     }
   }, [recognition]);
 
-  
   // Your existing button style logic
 
-  const buttonClass = `fixed bottom-16 left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 ${
-    isRecording ? 'animate-smooth-pulse bg-red-500' : 'animate-smooth-gentlePulse bg-slate-800 dark:bg-slate-600'
+  const buttonClass = `fixed BtnMic left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 animate-smooth-pulse ${
+    isRecording ? "bg-red-500" : "bg-slate-800 dark:bg-slate-600"
   }`;
-
-  
-  
 
   // const buttonStyle: React.CSSProperties = {
   //   position: 'fixed',
@@ -156,8 +160,11 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
       <button className={buttonClass} onClick={toggleRecording}>
         <IconMicrophone />
       </button>
- <div className="visuallyHidden">
-        <SummarizationComponent documentId={documentId} finalTranscription={finalTranscription} />
+      <div className="visuallyHidden">
+        <SummarizationComponent
+          documentId={documentId}
+          finalTranscription={finalTranscription}
+        />
       </div>
       {/*<div className="live-transcription-output">
         <p>{accumulatedFinalTranscript.current}</p>
@@ -167,5 +174,3 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
 };
 
 export { Microphone };
-
-

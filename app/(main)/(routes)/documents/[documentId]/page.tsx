@@ -11,32 +11,32 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Toolbar } from "@/components/toolbar";
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Microphone } from '@/app/(speech)/app/components/Microphone';
+import { Microphone } from "@/app/(speech)/app/components/Microphone";
 import SummarizationComponent from "@/app/(speech)/app/components/SummarizationComponent";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 import { IconPicker } from "@/components/icon-picker";
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 import VoiceItem from "@/app/(main)/_components/voice-item";
 import DetailsSection from "@/app/(main)/_components/details-section";
 
 interface DocumentIdPageProps {
   params: {
     documentId: Id<"documents">;
-    
   };
 }
 
-const DocumentIdPage = ({
-  params
-}: DocumentIdPageProps) => {
+const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const { finalTranscription } = useContext(TranscriptionContext);
-  const fetchedSummarizationResult = useQuery(api.documents.getSummarizationResult, params.documentId ? { id: params.documentId as Id<"documents"> } : "skip");
+  const fetchedSummarizationResult = useQuery(
+    api.documents.getSummarizationResult,
+    params.documentId ? { id: params.documentId as Id<"documents"> } : "skip"
+  );
 
   const document = useQuery(api.documents.getById, {
-    documentId: params.documentId
+    documentId: params.documentId,
   });
 
   const update = useMutation(api.documents.update);
@@ -44,10 +44,9 @@ const DocumentIdPage = ({
   const onChange = (content: string) => {
     update({
       id: params.documentId,
-      content
+      content,
     });
   };
-
 
   if (document === undefined) {
     return (
@@ -75,7 +74,7 @@ const DocumentIdPage = ({
   //     <Cover url={document.coverImage} />
   //       <div className="mx-auto max-w-7xl px-4 lg:px-8">
   //       <Toolbar initialData={document} />
-  
+
   //         <button
   //           className="lg:hidden" // This button is only visible on small screens
   //           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -106,40 +105,46 @@ const DocumentIdPage = ({
   //     </div>
   //   </TranscriptionProvider>
   // );
-  
-  
+
   return (
     <TranscriptionProvider>
       <div className="flex h-full">
+        <Microphone documentId={params.documentId} />
+
         <div className="page">
           <Cover url={document.coverImage} />
           {!!document.icon && (
-              <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
-                <IconPicker onChange={() => {}}>
-                  <p className="text-6xl hover:opacity-75 transition">
-                    {document.icon}
-                  </p>
-                </IconPicker>
-              </div>
+            <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
+              <IconPicker onChange={() => {}}>
+                <p className="text-6xl hover:opacity-75 transition">
+                  {document.icon}
+                </p>
+              </IconPicker>
+            </div>
           )}
+
           <div className="body flex flex-col gap-y-[16px]">
             <Toolbar initialData={document} />
             <Tabs>
               <TabList>
-                <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Transcription</div></Tab>
-                <Tab selectedClassName="bg-transparent text-black"><div className="text-sm font-bold">Summary</div></Tab>
+                <Tab selectedClassName="TabsTrigger text-black">
+                  <div className="text-sm font-bold">Transcription</div>
+                </Tab>
+                <Tab selectedClassName="TabsTrigger bg-transparent text-black">
+                  <div className="text-sm font-bold">Summary</div>
+                </Tab>
               </TabList>
 
               <TabPanel>
                 <div className="flex flex-col gap-[16px]">
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
-                  <VoiceItem/>
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
+                  <VoiceItem />
                 </div>
               </TabPanel>
               <TabPanel>
@@ -148,12 +153,10 @@ const DocumentIdPage = ({
             </Tabs>
           </div>
         </div>
-        <DetailsSection/>
+        <DetailsSection />
       </div>
     </TranscriptionProvider>
   );
-  };
-  
-  export default DocumentIdPage;
+};
 
-
+export default DocumentIdPage;
