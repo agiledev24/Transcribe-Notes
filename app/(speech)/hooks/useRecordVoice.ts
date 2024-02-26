@@ -4,137 +4,161 @@
 
 
   
-import { useEffect, useState, useRef } from "react";
-import { blobToBase64 } from "@/app/(speech)/utils/blobToBase64";
-import { createMediaStream } from "@/app/(speech)/utils/createMediaStream";
-import { api } from "@/convex/_generated/api";
+import { useEffect, useState, useCallback, useContext, useRef } from "react";
 import { Id } from "@/convex/_generated/dataModel";
-
-import { useMutation, useQuery } from "convex/react";
+import {
+    CreateProjectKeyResponse,
+    LiveClient,
+    LiveTranscriptionEvents,
+    createClient,
+  } from "@deepgram/sdk";
+import { useQueue } from "@uidotdev/usehooks";
+import TranscriptionContext from "../app/components/TranscriptionContext";
 
 
 
 export const useRecordVoice = (documentId: Id<"documents">, onTranscriptionComplete: any) => {
-    const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
-    const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio); // Correctly get the mutation function
+    const [apiKey, setApiKey] = useState<CreateProjectKeyResponse | null>();
+    const [, setLoadingKey] = useState(true);
+    const { add, remove, first, size, queue } = useQueue<any>([]);
+    const [connection, setConnection] = useState<LiveClient | null>();
+    const [caption, setCaption] = useState<string | null>();
+    const [isListening, setListening] = useState(false);
+    const [isProcessing, setProcessing] = useState(false);
+    const [micOpen, setMicOpen] = useState(false);
+    const [microphone, setMicrophone] = useState<MediaRecorder | null>();
+    const [userMedia, setUserMedia] = useState<MediaStream | null>();
 
-    const [text, setText] = useState("");
-    const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-        null
-    );
-    const [recording, setRecording] = useState(false);
-    const isRecording = useRef(false);
-    const chunks = useRef<Blob[]>([]);
+    const {
+        setLiveTranscription,
+        addLiveTranscription,
+        generateNewSessionId,
+      } = useContext(TranscriptionContext);
 
-    const startRecording = () => {
-        if (mediaRecorder) {
-            isRecording.current = true;
-            mediaRecorder.start();
-            setRecording(true);
-            console.log("useRecordVoice.js - Recording started");
-        }
-    };
+    const accumulatedFinalTranscript = useRef("");
+    const interimTranscript = useRef("");
 
-    const stopRecording = () => {
-        if (mediaRecorder) {
-            isRecording.current = false;
-            mediaRecorder.stop();
-            setRecording(false);
-            console.log("useRecordVoice.js - Recording stopped");
-        }
-    };
+    const toggleMicrophone = useCallback(async () => {
+        if (microphone && userMedia) {
+            setUserMedia(null);
+            setMicrophone(null);
+            microphone.stop();
 
+            addLiveTranscription(accumulatedFinalTranscript.current);
+            setLiveTranscription("");
+        } else {
+          const userMedia = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+
+          generateNewSessionId();
+          accumulatedFinalTranscript.current = "";
+          interimTranscript.current = "";
     
-
-    const getText = async (base64data: any) => {
-        try {
-            const response = await fetch("/api/speechToText", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ audio: base64data }),
-            }).then((res) => res.json());
-
-            const { text } = response;
-            setText(text);
-            console.log("useRecordVoice.js - Text received:", text);
-
-            // Call the callback function when the transcription is complete
-            if (onTranscriptionComplete) {
-                onTranscriptionComplete(text);
-            }
-        } catch (error) {
-            console.error("Error in transcription:", error);
+          const microphone = new MediaRecorder(userMedia);
+          microphone.start(500);
+    
+          microphone.onstart = () => {
+            setMicOpen(true);
+          };
+    
+          microphone.onstop = () => {
+            setMicOpen(false);
+          };
+    
+          microphone.ondataavailable = (e) => {
+            add(e.data);
+          };
+    
+          setUserMedia(userMedia);
+          setMicrophone(microphone);
         }
-    };
-
-    const initialMediaRecorder = (stream: any) => {
-        const mediaRecorder = new MediaRecorder(stream);
-        let isRecording = false;
-        // const callback = (peak: number) => {};
-
-        mediaRecorder.onstart = () => {
-            isRecording = true;
-            createMediaStream(stream, isRecording, (peak: number) => {});
-            chunks.current = [];
-            console.log("useRecordVoice.js - MediaRecorder started");
-        };
-
-        mediaRecorder.ondataavailable = (ev) => {
-            chunks.current.push(ev.data);
-        };
-
-        mediaRecorder.onstop = async () => {
-            isRecording = false;
-            const audioBlob = new Blob(chunks.current, { type: "audio/mp3" });
-            blobToBase64(audioBlob, getText); // Assuming you still want to convert and handle the text from the audio
-            console.log("useRecordVoice.js - MediaRecorder stopped");
-        
-            try {
-                const postUrl = await generateUploadUrl();
-                const result = await fetch(postUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'audio/mp3' },
-                    body: audioBlob,
-                });
-                const audioFileRef = await result.json(); // Assume this returns a reference to the uploaded audio file
-                
-                // Here, call the mutation to update the note with the audio file reference
-                // Assume you have the note's ID and a mutation set up to update the note
-                await updateNoteWithAudio({ noteId: documentId, audioFileRef: audioFileRef.storageId, storageId: audioFileRef.storageId });
-            } catch (error) {
-                console.error("Error uploading audio:", error);
-            }
-        };
-        
-
-
-        // mediaRecorder.onstop = async () => {
-        //     isRecording = false;
-        //     const audioBlob = new Blob(chunks.current, { type: "audio/mp3" });
-        //     // Assuming saveAudio is your Convex function to save the audio
-        //     const audioBase64 = await blobToBase64(audioBlob, getText ); // Convert blob to base64 if necessary
-        //     saveAudio(audioBase64).then(() => {
-        //         console.log("Audio saved to Convex successfully");
-        //     }).catch((error) => {
-        //         console.error("Error saving audio to Convex:", error);
-        //     });
-        //     console.log("useRecordVoice.js - MediaRecorder stopped");
-        // };
-        
-
-        setMediaRecorder(mediaRecorder);
-    };
+      }, [add, microphone, userMedia]);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            navigator.mediaDevices
-                .getUserMedia({ audio: true })
-                .then(initialMediaRecorder)
-                .catch((error) => console.error("MediaDevices Error:", error));
+        if (!apiKey) {
+            console.log("getting a new api key");
+            fetch("/api/deepgram", { cache: "no-store" })
+              .then((res) => res.json())
+              .then((object) => {
+                if (!("key" in object)) throw new Error("No api key returned");
+      
+                setApiKey(object);
+                setLoadingKey(false);
+              })
+              .catch((e) => {
+                console.error(e);
+              });
         }
-    }, []);
+      }, [apiKey]);
 
-    return { recording, startRecording, stopRecording, text };
+      useEffect(() => {
+        if (apiKey && "key" in apiKey) {
+          console.log("connecting to deepgram");
+          const deepgram = createClient(apiKey?.key ?? "");
+          const connection = deepgram.listen.live({
+            model: "nova",
+            interim_results: true,
+            smart_format: true,
+          });
+    
+          connection.on(LiveTranscriptionEvents.Open, () => {
+            console.log("connection established");
+            setListening(true);
+          });
+    
+          connection.on(LiveTranscriptionEvents.Close, () => {
+            console.log("connection closed");
+            setListening(false);
+            setApiKey(null);
+            setConnection(null);
+          });
+    
+          connection.on(LiveTranscriptionEvents.Transcript, (data) => {
+            const words = data.channel.alternatives[0].words;
+            const caption = words
+              .map((word: any) => word.punctuated_word ?? word.word)
+              .join(" ");
+
+            const isFinal = data.is_final;
+            if (caption !== "") {
+              setCaption(caption);
+
+              if (isFinal) {
+                accumulatedFinalTranscript.current += ` ${caption}`;
+                interimTranscript.current = "";
+                console.log('final caption: ', caption);
+              } else {
+                interimTranscript.current += ` ${caption}`;
+              }
+              setLiveTranscription(accumulatedFinalTranscript.current + interimTranscript.current);
+            }
+          });
+    
+          setConnection(connection);
+        }
+      }, [apiKey]);
+
+    useEffect(() => {
+        const processQueue = async () => {
+          if (size > 0 && !isProcessing) {
+            setProcessing(true);
+    
+            if (isListening) {
+              const blob = first;
+              connection?.send(blob);
+              remove();
+            }
+    
+            const waiting = setTimeout(() => {
+              clearTimeout(waiting);
+              setProcessing(false);
+            }, 250);
+          }
+        };
+    
+        processQueue();
+      }, [connection, queue, remove, first, size, isProcessing, isListening]);
+
+    return { micOpen, toggleMicrophone, caption };
 };

@@ -22,19 +22,6 @@ interface MicrophoneProps {
 const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
   const [, setSummarizationResult] = useState("");
 
-  // Assuming you have a query defined in your Convex functions to fetch the summarization result
-  const fetchedSummarizationResult = useQuery(
-    api.documents.getSummarizationResult,
-    documentId ? { id: documentId as Id<"documents"> } : "skip"
-  );
-
-  useEffect(() => {
-    if (fetchedSummarizationResult) {
-      // Process or set the fetched summarization result as needed
-      setSummarizationResult(fetchedSummarizationResult);
-    }
-  }, [fetchedSummarizationResult]);
-
   const [isRecording, setIsRecording] = useState(false);
   const accumulatedFinalTranscript = useRef("");
   const {
@@ -43,68 +30,59 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
     setFinalTranscription,
     generateNewSessionId,
   } = useContext(TranscriptionContext);
-  const recognitionActive = useRef(false);
 
-  const { startRecording, stopRecording } = useRecordVoice(
+  const { toggleMicrophone } = useRecordVoice(
     documentId,
     setFinalTranscription
   );
 
-  const recognition =
-    typeof window !== "undefined"
-      ? new (window.webkitSpeechRecognition || window.SpeechRecognition)()
-      : null;
-
   const toggleRecording = () => {
     setIsRecording(!isRecording);
-    recognitionActive.current = !isRecording;
     if (!isRecording) {
       accumulatedFinalTranscript.current = "";
-      if (recognition) {
-        recognition.start();
-        generateNewSessionId(); // Generate a new session ID for each new recording
-        startRecording();
-        setFinalTranscription(""); // Clear the final transcription
-      }
+      generateNewSessionId(); // Generate a new session ID for each new recording
+      toggleMicrophone();
+      setFinalTranscription(""); // Clear the final transcription
     } else {
-      if (recognition) {
-        recognition.abort();
-        stopRecording();
-        setLiveTranscription("");
-        setFinalTranscription(""); // Clear the final transcription
-      }
+      toggleMicrophone();
+      setLiveTranscription("");
+      setFinalTranscription(""); // Clear the final transcription
     }
   };
 
-  useEffect(() => {
-    if (recognition) {
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "es-MX";
+  // useEffect(() => {
+  //   if (recognition) {
+  //     recognition.continuous = true;
+  //     recognition.interimResults = true;
+  //     recognition.lang = "es-MX";
 
-      recognition.onresult = (event: any) => {
-        if (!recognitionActive.current) return;
+  //     recognition.onresult = (event: any) => {
+  //       if (!recognitionActive.current) return;
 
-        let interimTranscript = "";
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            accumulatedFinalTranscript.current +=
-              event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
+  //       let interimTranscript = "";
+  //       for (let i = event.resultIndex; i < event.results.length; ++i) {
+  //         if (event.results[i].isFinal) {
+  //           accumulatedFinalTranscript.current +=
+  //             event.results[i][0].transcript;
+  //         } else {
+  //           interimTranscript += event.results[i][0].transcript;
+  //         }
+  //       }
 
-        setLiveTranscription(
-          accumulatedFinalTranscript.current + interimTranscript
-        );
-      };
+  //       console.log(
+  //         "setting accumulatedFinalTranscript",
+  //         accumulatedFinalTranscript.current + interimTranscript
+  //       );
+  //       setLiveTranscription(
+  //         accumulatedFinalTranscript.current + interimTranscript
+  //       );
+  //     };
 
-      recognition.onend = () => {
-        console.log("Recognition service has ended");
-      };
-    }
-  }, [recognition]);
+  //     recognition.onend = () => {
+  //       console.log("Recognition service has ended");
+  //     };
+  //   }
+  // }, [recognition]);
 
   // Your existing button style logic
 

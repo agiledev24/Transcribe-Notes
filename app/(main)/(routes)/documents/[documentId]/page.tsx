@@ -6,6 +6,7 @@ import { useMutation, useQuery } from "convex/react";
 import dynamic from "next/dynamic";
 import { useContext, useMemo, useState } from "react";
 import { TranscriptionProvider } from "@/app/(speech)/app/components/TranscriptionContext"; // This is the corrected import path
+import Transcription from "@/app/(speech)/app/components/Transcription";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Toolbar } from "@/components/toolbar";
@@ -111,7 +112,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       <div className="flex h-full">
         <Microphone documentId={params.documentId} />
 
-        <div className="page">
+        <div className="page w-full">
           <Cover url={document.coverImage} />
           {!!document.icon && (
             <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
@@ -136,16 +137,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
               </TabList>
 
               <TabPanel>
-                <div className="flex flex-col gap-[16px]">
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                  <VoiceItem />
-                </div>
+                <Transcription />
               </TabPanel>
               <TabPanel>
                 <h2>Any content 2</h2>
