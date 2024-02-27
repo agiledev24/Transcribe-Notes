@@ -1,10 +1,20 @@
-import { DeepgramError, createClient } from "@deepgram/sdk";
+import { DeepgramClient, DeepgramError, createClient } from "@deepgram/sdk";
 import { NextResponse } from "next/server";
+
+const model = {
+        model: "nova-2",
+        interim_results: true,
+        smart_format: true,
+        diarize: true,
+        utterances: true,
+        // punctuate: true,
+      };
 
 export async function GET(request: Request) {
   // gotta use the request object to invalidate the cache every request :vomit:
   const url = request.url;
-  const deepgram = createClient("a20da2ba7bf9668fd4382e77ba212d7ac929f71a" ?? "");
+
+  const deepgram = createClient(process.env.DEEPGRAM_API_KEY ?? "");
 
   let { result: projectsResult, error: projectsError } =
     await deepgram.manage.getProjects();
@@ -36,4 +46,37 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({ ...newKeyResult, url });
+}
+
+export async function POST(request: Request) {
+   // gotta use the request object to invalidate the cache every request :vomit:
+  
+  const body = await request.json();
+  const {url} = body;
+  console.log('received request for ', url);
+  const deepgram = createClient(process.env.DEEPGRAM_API_KEY ?? "");
+
+  const {result, error} = await transcribe(deepgram, url)
+
+  if(error)
+      return NextResponse.json(error.message);
+  else
+      return NextResponse.json(result);
+}
+
+const transcribe = async (deepgram: DeepgramClient, fileUrl: string) => {
+
+    console.log('getting utterance result')
+    const { result, error } = await deepgram.listen.prerecorded.transcribeUrl(
+        { url: fileUrl },
+        model,
+    );
+
+    if (error) {
+        console.error(error);
+    } else {
+        console.dir(result, {depth: null});
+    }
+
+    return {result, error}
 }

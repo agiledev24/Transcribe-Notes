@@ -21,10 +21,10 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
   const { liveTranscription, finalTranscription, currentSessionId } =
     useContext(TranscriptionContext);
 
-  console.log("resolvedTheme:", resolvedTheme);
-  console.log("edgestore:", edgestore);
-  console.log("finalTranscription:", finalTranscription);
-  console.log("currentSessionId:", currentSessionId);
+  // console.log("resolvedTheme:", resolvedTheme);
+  // console.log("edgestore:", edgestore);
+  // console.log("finalTranscription:", finalTranscription);
+  // console.log("currentSessionId:", currentSessionId);
 
   const editor: BlockNoteEditor = useBlockNote({
     editable,
@@ -50,14 +50,14 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
         // If final transcription is available and the block exists, update it
         if (blockExists) {
           editor.updateBlock(transcriptionBlockId, {
-            content: finalTranscription,
+            content: finalTranscription.transcript,
           });
         } else {
           // If the block doesn't exist yet, create it with final transcription
           const newBlock: PartialBlock = {
             id: transcriptionBlockId,
             type: "paragraph",
-            content: finalTranscription,
+            content: finalTranscription.transcript,
           };
           editor.insertBlocks(
             [newBlock],
@@ -70,7 +70,7 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
         const newBlock: PartialBlock = {
           id: transcriptionBlockId,
           type: "paragraph",
-          content: liveTranscription,
+          content: liveTranscription.transcript,
         };
         editor.insertBlocks(
           [newBlock],
@@ -80,7 +80,7 @@ const Editor = ({ onChange, initialContent, editable }: EditorProps) => {
       } else if (liveTranscription && blockExists) {
         // If the block exists, update it with live transcription
         editor.updateBlock(transcriptionBlockId, {
-          content: liveTranscription,
+          content: liveTranscription.transcript,
         });
       }
     }
