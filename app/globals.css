@@ -126,11 +126,24 @@ body,
     position: relative;
     height: 150vh;
     max-height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     perspective: 1px;
     perspective-origin: center top;
     transform-style: preserve-3d;
   }
+
+
+  .page-content {
+    overflow: auto;
+    height: calc(100% - 140px);
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .audio-wrapper {
+    bottom: 52px;
+  }
+
   .body {
     background: white;
     transform: translateZ(0);

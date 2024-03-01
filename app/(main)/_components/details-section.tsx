@@ -58,7 +58,7 @@ const DetailsSection = () => {
       <aside
         ref={sidebarRef}
         className={cn(
-          "group/sidebar h-full bg-white overflow-y-auto relative flex w-[620px] flex-col z-[99999]",
+          "group/sidebar border-2 h-full bg-white overflow-y-auto relative flex w-[620px] flex-col z-[99999]",
           isResetting && "transition-all ease-in-out duration-300",
           isMobile && "w-0"
         )}

@@ -45,7 +45,7 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
 
   // Your existing button style logic
 
-  const buttonClass = `fixed BtnMic left-1/2 transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 animate-smooth-pulse ${
+  const buttonClass = `fixed left-1/2 bottom-[60px] transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 animate-smooth-pulse ${
     isRecording ? "bg-red-500" : "bg-slate-800 dark:bg-slate-600"
   }`;
 

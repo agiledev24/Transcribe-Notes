@@ -16,6 +16,7 @@ import { createMediaStream } from "../utils/createMediaStream";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Transcription } from "@/app/types";
+import { formatTimestamp } from "@/app/(speech)/utils";
 
 const model = {
         model: "nova",
@@ -41,7 +42,9 @@ export const useRecordVoice = (
   const [userMedia, setUserMedia] = useState<MediaStream | null>();
   const chunks = useRef<Blob[]>([]);
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
-  const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio); // C
+  const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
+  const updateDocument = useMutation(api.documents.update);
+  const updateSummarization = useMutation(api.documents.saveSummarizationResult);
 
   const {
     setLiveTranscription,
@@ -49,7 +52,8 @@ export const useRecordVoice = (
     setFinalTranscription,
     generateNewSessionId,
     clearFinalTranscriptions,
-    setIsTranscribing
+    setIsTranscribed,
+    setAudioFileUrl,
   } = useContext(TranscriptionContext);
 
 
@@ -87,7 +91,6 @@ export const useRecordVoice = (
         try {
             const postUrl = await generateUploadUrl();
             console.log('is transcribing audio file, postUrl is', postUrl)
-            setIsTranscribing(true);
 
             const result = await fetch(postUrl, {
                 method: 'POST',
@@ -112,14 +115,19 @@ export const useRecordVoice = (
                     url: uploadResult.fileUrl
                   })}
               );
+              console.log('transcribeResponse', transcribeResponse);
+              setAudioFileUrl(uploadResult.fileUrl);
               const utteranceResult = await transcribeResponse.json();
-              console.log('utteranceResult', utteranceResult);
               clearFinalTranscriptions();
               
               const utterances = utteranceResult.results.utterances;
               utterances.map(function(transcription: Transcription, index: any){
+                transcription.timestamp = formatTimestamp(transcription.start);
                 addFinalTranscription(transcription);
               })
+
+              await updateDocument({ id: documentId, content: JSON.stringify(utterances) });
+              setIsTranscribed(true);
             }
 
         } catch (error) {
@@ -180,10 +188,7 @@ export const useRecordVoice = (
           const speaker = words[0].speaker; // Assuming all words in this transcript have the same speaker.
           const startSeconds = words[0].start; // Start time of the first word.
 
-          // Format as MM:SS
-          const minutes = Math.floor(startSeconds / 60);
-          const seconds = Math.floor(startSeconds % 60);
-          const formattedTimestamp = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+          const formattedTimestamp = formatTimestamp(startSeconds);
 
           const isFinal = data.is_final;
 

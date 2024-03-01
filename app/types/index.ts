@@ -9,5 +9,7 @@ export interface Transcription {
   transcript: string;
   words: Word[];
   speaker: number;
+  start: number;
+  end: number;
   timestamp: string;
 }

@@ -42,6 +42,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-h5-audio-player": "^3.9.1",
     "react-tabs": "^6.0.2",
     "react-textarea-autosize": "^8.5.3",
     "react-voice-recorder-player": "^1.1.0",

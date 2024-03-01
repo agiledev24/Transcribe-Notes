@@ -8,6 +8,7 @@ const model = {
         diarize: true,
         utterances: true,
         // punctuate: true,
+        summarize: true,
       };
 
 export async function GET(request: Request) {

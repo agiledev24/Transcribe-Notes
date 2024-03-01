@@ -3,9 +3,7 @@
 
 // Make sure all import statements are at the top of the file
 import { useMutation, useQuery } from "convex/react";
-import dynamic from "next/dynamic";
-import { useContext, useMemo, useState } from "react";
-import { TranscriptionProvider } from "@/app/(speech)/app/components/TranscriptionContext"; // This is the corrected import path
+import { useContext, useEffect, useMemo, useState } from "react";
 import Transcription from "@/app/(speech)/app/components/Transcription";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -13,13 +11,13 @@ import { Toolbar } from "@/components/toolbar";
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Microphone } from "@/app/(speech)/app/components/Microphone";
-import SummarizationComponent from "@/app/(speech)/app/components/SummarizationComponent";
 import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 import { IconPicker } from "@/components/icon-picker";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
-import VoiceItem from "@/app/(main)/_components/voice-item";
 import DetailsSection from "@/app/(main)/_components/details-section";
+import AudioPlayer from 'react-h5-audio-player';
+import 'react-h5-audio-player/lib/styles.css';
 
 interface DocumentIdPageProps {
   params: {
@@ -30,7 +28,7 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { finalTranscription } = useContext(TranscriptionContext);
+  const { audioFileUrl, setAudioFileUrl, setAudioCurrentTime, isTranscribed, setIsTranscribed, addFinalTranscription, clearFinalTranscriptions } = useContext(TranscriptionContext);
   const fetchedSummarizationResult = useQuery(
     api.documents.getSummarizationResult,
     params.documentId ? { id: params.documentId as Id<"documents"> } : "skip"
@@ -40,14 +38,27 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     documentId: params.documentId,
   });
 
-  const update = useMutation(api.documents.update);
+  useEffect(() => {
+    clearFinalTranscriptions();
+    setAudioFileUrl("");
+    setIsTranscribed(false);
+    setAudioCurrentTime(0);
+  }, [params.documentId]);
 
-  const onChange = (content: string) => {
-    update({
-      id: params.documentId,
-      content,
-    });
-  };
+  useEffect(() => {
+    if (document && document.content) {
+      const content = JSON.parse(document.content);
+      if (content && !isTranscribed) {
+        content.map(function(transcription: any, index: any){
+          addFinalTranscription(transcription);
+          setIsTranscribed(true);
+        })
+      }
+      if (document.audioFileUrl) {
+        setAudioFileUrl(document.audioFileUrl);
+      }
+    }
+  }, [document]);
 
   if (document === undefined) {
     return (
@@ -108,11 +119,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   // );
 
   return (
-    <TranscriptionProvider>
-      <div className="flex h-full">
-        <Microphone documentId={params.documentId} />
-
-        <div className="page w-full">
+    <div className="flex h-full">
+        {!isTranscribed && <Microphone documentId={params.documentId} />}
+      <div className="flex flex-col page w-full h-full">
+        <div className={"page-content " + (!isTranscribed ? "h-full":"")}>
           <Cover url={document.coverImage} />
           {!!document.icon && (
             <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
@@ -137,7 +147,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
               </TabList>
 
               <TabPanel>
-                <Transcription />
+                <Transcription/>
               </TabPanel>
               <TabPanel>
                 <h2>Any content 2</h2>
@@ -145,9 +155,19 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
             </Tabs>
           </div>
         </div>
-        <DetailsSection />
+        {isTranscribed && audioFileUrl && (
+            <div className="fixed audio-wrapper left-0 right-0">
+              <AudioPlayer
+                autoPlay
+                src={audioFileUrl}
+                onListen={(e: any) => setAudioCurrentTime(parseFloat(e.srcElement.currentTime))}
+                // other props here
+              />
+            </div>
+          )}
       </div>
-    </TranscriptionProvider>
+      <DetailsSection />
+    </div>
   );
 };
 
