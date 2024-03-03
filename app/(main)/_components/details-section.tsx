@@ -1,8 +1,8 @@
-import { ElementRef, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, ElementRef, SetStateAction, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, XSquare } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
 import dynamic from "next/dynamic";
 import Checkbox from "./checkbox";
@@ -14,9 +14,11 @@ import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionCon
 
 interface DetailsSectionProps {
   documentId: Id<"documents">;
+  isCollapsed: boolean;
+  setIsCollapsed: Dispatch<SetStateAction<boolean>>;
 }
 
-const DetailsSection = ({documentId}: DetailsSectionProps) => {
+const DetailsSection = ({documentId, isCollapsed, setIsCollapsed}: DetailsSectionProps) => {
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
     []
@@ -37,7 +39,7 @@ const DetailsSection = ({documentId}: DetailsSectionProps) => {
   const [isResetting, setIsResetting] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  // const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   const collapse = () => {
     if (sidebarRef.current) {
@@ -91,7 +93,7 @@ const DetailsSection = ({documentId}: DetailsSectionProps) => {
             isMobile && "opacity-100"
           )}
         >
-          <ChevronsRight className="h-6 w-6" />
+          {isMobile ? <XSquare /> : <ChevronsRight className="h-6 w-6" />}
         </div>
         <Tabs.Root className="TabsRoot" defaultValue="insight">
           <Tabs.List className="TabsList">

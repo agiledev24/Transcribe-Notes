@@ -23,16 +23,18 @@ interface TranscriptionContextType {
   setAudioFileUrl: (url: string) => void;
   audioCurrentTime: number;
   setAudioCurrentTime: (time: number) => void;
+  isDisabledRecordButton: boolean;
+  setisDisabledRecordButton: (isDisabledRecordButton: boolean) => void;
 }
 
 const defaultState: TranscriptionContextType = {
   liveTranscription: null,
-  setLiveTranscription: () => {},
+  setLiveTranscription: () => { },
   finalTranscriptions: [],
-  addFinalTranscription: () => {},
-  clearFinalTranscriptions: () => {},
+  addFinalTranscription: () => { },
+  clearFinalTranscriptions: () => { },
   finalTranscription: null,
-  setFinalTranscription: () => {},
+  setFinalTranscription: () => { },
   summarizationResult: "", // Added default value for summarizationResult
   setSummarizationResult: () => {}, // Added default value for setSummarizationResult
   summaryNote: "", // Added default value for summarizationResult
@@ -40,11 +42,13 @@ const defaultState: TranscriptionContextType = {
   generateNewSessionId: () => {},
   currentSessionId: "",
   isTranscribed: false,
-  setIsTranscribed: () => {},
+  setIsTranscribed: () => { },
   audioFileUrl: "",
-  setAudioFileUrl: () => {},
+  setAudioFileUrl: () => { },
   audioCurrentTime: 0,
-  setAudioCurrentTime: () => {},
+  setAudioCurrentTime: () => { },
+  isDisabledRecordButton: false,
+  setisDisabledRecordButton: () => { },
 };
 
 const TranscriptionContext =
@@ -68,6 +72,7 @@ export const TranscriptionProvider = ({
   const [isTranscribed, setIsTranscribed] = useState(false);
   const [audioFileUrl, setAudioFileUrl] = useState("");
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [isDisabledRecordButton, setisDisabledRecordButton] = useState(false);
 
   const generateNewSessionId = () => {
     const newSessionId = uuidv4();
@@ -105,6 +110,8 @@ export const TranscriptionProvider = ({
     setAudioFileUrl,
     audioCurrentTime,
     setAudioCurrentTime,
+    setisDisabledRecordButton,
+    isDisabledRecordButton,
   };
 
   return (

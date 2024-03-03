@@ -4,6 +4,7 @@
 // Make sure all import statements are at the top of the file
 import { useMutation, useQuery } from "convex/react";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useMediaQuery } from "usehooks-ts";
 import Transcription from "@/app/(speech)/app/components/Transcription";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -27,8 +28,12 @@ interface DocumentIdPageProps {
 
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
-  const { audioFileUrl, 
+  const { 
+    isDisabledRecordButton,
+    audioFileUrl, 
     setAudioFileUrl, 
     setAudioCurrentTime, 
     isTranscribed, 
@@ -95,7 +100,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   if (document === null) {
     return <div>Document not found.</div>;
   }
-
   // return (
   //   <TranscriptionProvider>
   //     <div className="pb-40">
@@ -133,16 +137,14 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   //     </div>
   //   </TranscriptionProvider>
   // );
-
   return (
-    <div className="flex h-full">
-        {!isTranscribed && <Microphone documentId={params.documentId} />}
-      <div className="flex flex-col page w-full h-full">
-        <div className={"page-content " + (!isTranscribed ? "h-full":"")}>
+    <div className="flex h-full justify-end">
+      <div className={`flex flex-col page ${!isCollapsed && isMobile ? 'w-0' : 'w-full transition-all ease-in-out duration-300'} h-full`}>
+        <div className={"page-content w-auto" + (!isTranscribed ? "h-full" : "")}>
           <Cover url={document.coverImage} />
           {!!document.icon && (
             <div className="flex absolute transform translate-y-[-50%] left-[40px] bg-[#50d71e] w-[120px] h-[120px] p-[8px] justify-center rounded-md z-50">
-              <IconPicker onChange={() => {}}>
+              <IconPicker onChange={() => { }}>
                 <p className="text-6xl hover:opacity-75 transition">
                   {document.icon}
                 </p>
@@ -163,7 +165,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
               </TabList>
 
               <TabPanel>
-                <Transcription/>
+                <Transcription />
               </TabPanel>
               <TabPanel>
                 <h2>{summarizationResult}</h2>
@@ -171,18 +173,19 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
             </Tabs>
           </div>
         </div>
+        {!isTranscribed && <Microphone documentId={params.documentId} />}
         {isTranscribed && audioFileUrl && (
-            <div className="fixed audio-wrapper left-0 right-0">
-              <AudioPlayer
-                autoPlay
-                src={audioFileUrl}
-                onListen={(e: any) => setAudioCurrentTime(parseFloat(e.srcElement.currentTime))}
-                // other props here
-              />
-            </div>
-          )}
+          <div className="fixed audio-wrapper left-0 right-0">
+            <AudioPlayer
+              autoPlay
+              src={audioFileUrl}
+              onListen={(e: any) => setAudioCurrentTime(parseFloat(e.srcElement.currentTime))}
+            // other props here
+            />
+          </div>
+        )}
       </div>
-      <DetailsSection documentId={params.documentId} />
+      <DetailsSection documentId={params.documentId} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
     </div>
   );
 };

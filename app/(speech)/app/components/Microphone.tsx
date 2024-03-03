@@ -21,7 +21,8 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
     setLiveTranscription,
     setFinalTranscription,
     generateNewSessionId,
-    clearFinalTranscriptions
+    clearFinalTranscriptions,
+    isDisabledRecordButton,
   } = useContext(TranscriptionContext);
 
   const { toggleMicrophone } = useRecordVoice(
@@ -44,10 +45,7 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
   };
 
   // Your existing button style logic
-
-  const buttonClass = `fixed left-1/2 bottom-[60px] transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 animate-smooth-pulse ${
-    isRecording ? "bg-red-500" : "bg-slate-800 dark:bg-slate-600"
-  }`;
+  const buttonClass = `cursor-not-allowed record-button fixed left-1/2 bottom-[60px] transform -translate-x-1/2 w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 cursor-pointer z-50 animate-smooth-pulse ${isRecording ? "bg-red-500" : (isDisabledRecordButton ? 'bg-slate-300 dark:bg-slate-600' : 'bg-slate-800 dark:bg-slate-600')}`;
 
   return (
     <>
@@ -75,7 +73,7 @@ const Microphone: React.FC<MicrophoneProps> = ({ documentId }) => {
             border: 0;
         `}
       </style>
-      <button className={buttonClass} onClick={toggleRecording}>
+      <button className={buttonClass} onClick={toggleRecording} disabled={isDisabledRecordButton}>
         <IconMicrophone />
       </button>
       <div className="visuallyHidden">

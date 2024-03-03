@@ -19,13 +19,13 @@ import { Transcription } from "@/app/types";
 import { formatTimestamp } from "@/app/(speech)/utils";
 
 const model = {
-        model: "nova",
-        interim_results: true,
-        smart_format: true,
-        diarize: true,
-        utterances: true,
-        // punctuate: true,
-      };
+  model: "nova",
+  interim_results: true,
+  smart_format: true,
+  diarize: true,
+  utterances: true,
+  // punctuate: true,
+};
 
 export const useRecordVoice = (
   documentId: Id<"documents">,
@@ -53,6 +53,8 @@ export const useRecordVoice = (
     generateNewSessionId,
     clearFinalTranscriptions,
     setIsTranscribed,
+    isDisabledRecordButton,
+    setisDisabledRecordButton,
     setAudioFileUrl,
     setSummarizationResult,
     setSummaryNote
@@ -114,22 +116,21 @@ export const useRecordVoice = (
 
       microphone.onstop = async () => {
         setMicOpen(false);
-
+        setisDisabledRecordButton(true);
         const audioBlob = new Blob(chunks.current, { type: "audio/mp3" });
         // blobToBase64(audioBlob, getText); // Assuming you still want to convert and handle the text from the audio
         console.log("useRecordVoice.js - MediaRecorder stopped");
-    
-        try {
-            const postUrl = await generateUploadUrl();
-            console.log('is transcribing audio file, postUrl is', postUrl)
 
-            const result = await fetch(postUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'audio/mp3' },
-                body: audioBlob,
-            });
-            const audioFileRef = await result.json(); // Assume this returns a reference to the uploaded audio file
-            
+        try {
+          const postUrl = await generateUploadUrl();
+          console.log('is transcribing audio file, postUrl is', postUrl)
+
+          const result = await fetch(postUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'audio/mp3' },
+            body: audioBlob,
+          });
+          const audioFileRef = await result.json(); // Assume this returns a reference to the uploaded audio file
 
 
             // Here, call the mutation to update the note with the audio file reference
@@ -165,11 +166,12 @@ export const useRecordVoice = (
                 setSummaryNote(summaryNote);
                 await updateDocument({ id: documentId, content: JSON.stringify(utterances), summarizationResult: summary.short, summaryNote: summaryNote });
                 setIsTranscribed(true);
+                setisDisabledRecordButton(false);
               }              
             }
 
         } catch (error) {
-            console.error("Error uploading audio:", error);
+          console.error("Error uploading audio:", error);
         }
       };
 
@@ -177,7 +179,7 @@ export const useRecordVoice = (
         add(e.data);
         chunks.current.push(e.data);
       };
-      
+
       setUserMedia(userMedia);
       setMicrophone(microphone);
     }
