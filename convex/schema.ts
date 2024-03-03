@@ -13,7 +13,8 @@ export default defineSchema({
     icon: v.optional(v.string()),
     isPublished: v.boolean(),
     noteCreationDateTime: v.optional(v.string()), // Add this line
-    summarizationResult: v.optional(v.string()), // Add this line
+    summarizationResult: v.optional(v.string()), // Add this line for summary
+    summaryNote: v.optional(v.string()),
     audioFileRef: v.optional(v.string()), // Add this line for the audio file reference    
     audioFileUrl: v.optional(v.string()),
   })

@@ -8,7 +8,7 @@ const model = {
         diarize: true,
         utterances: true,
         // punctuate: true,
-        summarize: true,
+        summarize: 'v2',
       };
 
 export async function GET(request: Request) {
@@ -50,14 +50,14 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-   // gotta use the request object to invalidate the cache every request :vomit:
+   // transcribe Remote file and Summarize
   
   const body = await request.json();
   const {url} = body;
   console.log('received request for ', url);
   const deepgram = createClient(process.env.DEEPGRAM_API_KEY ?? "");
 
-  const {result, error} = await transcribe(deepgram, url)
+  const {result, error} = await transcribeUrl(deepgram, url)
 
   if(error)
       return NextResponse.json(error.message);
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       return NextResponse.json(result);
 }
 
-const transcribe = async (deepgram: DeepgramClient, fileUrl: string) => {
+const transcribeUrl = async (deepgram: DeepgramClient, fileUrl: string) => {
 
     console.log('getting utterance result')
     const { result, error } = await deepgram.listen.prerecorded.transcribeUrl(

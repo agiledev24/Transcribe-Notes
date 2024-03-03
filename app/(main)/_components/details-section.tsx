@@ -1,4 +1,4 @@
-import { ElementRef, useEffect, useMemo, useRef, useState } from "react";
+import { ElementRef, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
@@ -6,13 +6,33 @@ import { ChevronsLeft, ChevronsRight } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
 import dynamic from "next/dynamic";
 import Checkbox from "./checkbox";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { saveSummaryNote } from "@/convex/documents";
+import { Id } from "@/convex/_generated/dataModel";
+import TranscriptionContext from "@/app/(speech)/app/components/TranscriptionContext";
 
-const DetailsSection = () => {
+interface DetailsSectionProps {
+  documentId: Id<"documents">;
+}
+
+const DetailsSection = ({documentId}: DetailsSectionProps) => {
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
     []
   );
 
+  const { summaryNote } = useContext(TranscriptionContext);
+
+  const updateSummary = useMutation(api.documents.saveSummaryNote)
+  const onChangeEditor = (content: string) => {
+    console.log('saving summary note', content)
+
+    updateSummary({
+      id: documentId,
+      summaryNote: content
+    });
+  };
   const sidebarRef = useRef<ElementRef<"aside">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -92,7 +112,7 @@ const DetailsSection = () => {
           <div>
             <Tabs.Content className="TabsContent" value="insight">
               <div className="py-3">
-                <Editor onChange={() => {}} />
+                <Editor onChange={onChangeEditor} initialContent={summaryNote} />
               </div>
             </Tabs.Content>
 

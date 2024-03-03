@@ -28,11 +28,19 @@ interface DocumentIdPageProps {
 const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const { audioFileUrl, setAudioFileUrl, setAudioCurrentTime, isTranscribed, setIsTranscribed, addFinalTranscription, clearFinalTranscriptions } = useContext(TranscriptionContext);
-  const fetchedSummarizationResult = useQuery(
-    api.documents.getSummarizationResult,
-    params.documentId ? { id: params.documentId as Id<"documents"> } : "skip"
-  );
+  const { audioFileUrl, 
+    setAudioFileUrl, 
+    setAudioCurrentTime, 
+    isTranscribed, 
+    setIsTranscribed, 
+    addFinalTranscription, 
+    clearFinalTranscriptions,
+    setLiveTranscription,
+    setSummarizationResult,
+    summarizationResult,
+    summaryNote,
+    setSummaryNote
+   } = useContext(TranscriptionContext);
 
   const document = useQuery(api.documents.getById, {
     documentId: params.documentId,
@@ -43,13 +51,17 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
     setAudioFileUrl("");
     setIsTranscribed(false);
     setAudioCurrentTime(0);
+    setSummarizationResult("");
+    setSummaryNote("");
+    setLiveTranscription(null);
   }, [params.documentId]);
 
   useEffect(() => {
     if (document && document.content) {
+      console.log('document', document)
       const content = JSON.parse(document.content);
       if (content && !isTranscribed) {
-        content.map(function(transcription: any, index: any){
+        content?.map(function(transcription: any, index: any) {
           addFinalTranscription(transcription);
           setIsTranscribed(true);
         })
@@ -57,6 +69,10 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       if (document.audioFileUrl) {
         setAudioFileUrl(document.audioFileUrl);
       }
+
+      setSummarizationResult(document.summarizationResult ? document.summarizationResult: "");
+
+      setSummaryNote(document.summaryNote? document.summaryNote: "");
     }
   }, [document]);
 
@@ -150,7 +166,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
                 <Transcription/>
               </TabPanel>
               <TabPanel>
-                <h2>Any content 2</h2>
+                <h2>{summarizationResult}</h2>
               </TabPanel>
             </Tabs>
           </div>
@@ -166,7 +182,7 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
             </div>
           )}
       </div>
-      <DetailsSection />
+      <DetailsSection documentId={params.documentId} />
     </div>
   );
 };

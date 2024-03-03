@@ -13,6 +13,8 @@ interface TranscriptionContextType {
   setFinalTranscription: (transcription: Transcription | null) => void;
   summarizationResult: string; // Added summarizationResult property
   setSummarizationResult: (result: string) => void; // Added setSummarizationResult method
+  summaryNote: string;
+  setSummaryNote: (note: string) => void;
   generateNewSessionId: () => void;
   currentSessionId: string;
   isTranscribed: boolean;
@@ -33,6 +35,8 @@ const defaultState: TranscriptionContextType = {
   setFinalTranscription: () => {},
   summarizationResult: "", // Added default value for summarizationResult
   setSummarizationResult: () => {}, // Added default value for setSummarizationResult
+  summaryNote: "", // Added default value for summarizationResult
+  setSummaryNote: () => {}, // Added default value for setSummarizationResult
   generateNewSessionId: () => {},
   currentSessionId: "",
   isTranscribed: false,
@@ -59,6 +63,7 @@ export const TranscriptionProvider = ({
   const [finalTranscription, setFinalTranscription] =
     useState<Transcription | null>(null);
   const [summarizationResult, setSummarizationResult] = useState(""); // Added summarizationResult state
+  const [summaryNote, setSummaryNote] = useState(""); // Added summarizationResult state
   const [currentSessionId, setCurrentSessionId] = useState("");
   const [isTranscribed, setIsTranscribed] = useState(false);
   const [audioFileUrl, setAudioFileUrl] = useState("");
@@ -90,6 +95,8 @@ export const TranscriptionProvider = ({
     setFinalTranscription,
     summarizationResult, // Added summarizationResult to contextValue
     setSummarizationResult, // Added setSummarizationResult to contextValue
+    summaryNote,
+    setSummaryNote,
     generateNewSessionId,
     currentSessionId,
     setIsTranscribed,

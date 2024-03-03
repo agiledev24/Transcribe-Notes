@@ -44,7 +44,7 @@ export const useRecordVoice = (
   const generateUploadUrl = useMutation(api.documents.generateUploadUrl);
   const updateNoteWithAudio = useMutation(api.documents.updateNoteWithAudio);
   const updateDocument = useMutation(api.documents.update);
-  const updateSummarization = useMutation(api.documents.saveSummarizationResult);
+  const updateSummaryNote = useMutation(api.documents.saveSummaryNote);
 
   const {
     setLiveTranscription,
@@ -54,7 +54,38 @@ export const useRecordVoice = (
     clearFinalTranscriptions,
     setIsTranscribed,
     setAudioFileUrl,
+    setSummarizationResult,
+    setSummaryNote
   } = useContext(TranscriptionContext);
+
+  const sendSummaryForBlocknote = async (summary: string) => {
+    if (
+      summary.length > 0
+    ) {
+      try {
+        const response = await fetch("/api/summarize", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            messages: [{ content: summary }],
+          }),
+        });
+        if (!response.ok) throw new Error("Network response was not ok");
+        const data = (await response.json()).data;
+        console.log('Summary Note result:', data);
+        return data;
+
+      } catch (error) {
+        console.error(
+          "Error sending transcription for summarization:",
+          error
+        );
+      }
+      return null;
+    }
+  };
 
 
   const toggleMicrophone = useCallback(async () => {
@@ -115,9 +146,10 @@ export const useRecordVoice = (
                     url: uploadResult.fileUrl
                   })}
               );
-              console.log('transcribeResponse', transcribeResponse);
               setAudioFileUrl(uploadResult.fileUrl);
               const utteranceResult = await transcribeResponse.json();
+              console.log('utteranceResult', utteranceResult);
+
               clearFinalTranscriptions();
               
               const utterances = utteranceResult.results.utterances;
@@ -125,9 +157,15 @@ export const useRecordVoice = (
                 transcription.timestamp = formatTimestamp(transcription.start);
                 addFinalTranscription(transcription);
               })
-
-              await updateDocument({ id: documentId, content: JSON.stringify(utterances) });
-              setIsTranscribed(true);
+              
+              const summary = utteranceResult.results.summary;
+              if(summary.result === "success")  {
+                setSummarizationResult(summary.short);
+                const summaryNote = await sendSummaryForBlocknote(summary.short);
+                setSummaryNote(summaryNote);
+                await updateDocument({ id: documentId, content: JSON.stringify(utterances), summarizationResult: summary.short, summaryNote: summaryNote });
+                setIsTranscribed(true);
+              }              
             }
 
         } catch (error) {

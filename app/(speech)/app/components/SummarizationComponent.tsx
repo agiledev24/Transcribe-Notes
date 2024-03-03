@@ -16,8 +16,8 @@ const SummarizationComponent: React.FC<SummarizationComponentProps> = ({
   finalTranscription,
 }) => {
   const [summarizationResult, setSummarizationResult] = useState("");
-  const saveSummarizationResult = useMutation(
-    api.documents.saveSummarizationResult
+  const saveSummaryNote = useMutation(
+    api.documents.saveSummaryNote
   );
 
   useEffect(() => {
@@ -41,9 +41,9 @@ const SummarizationComponent: React.FC<SummarizationComponentProps> = ({
           // console.log('Summarization result:', data);
           setSummarizationResult(data); // Update the summarization result
           if (documentId) {
-            saveSummarizationResult({
+            saveSummaryNote({
               id: documentId as Id<"documents">,
-              summarizationResult: data.data,
+              summaryNote: data.data,
             });
           }
         } catch (error) {

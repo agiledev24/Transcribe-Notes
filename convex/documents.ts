@@ -134,6 +134,7 @@ export const create = mutation({
       isPublished: false,
       noteCreationDateTime: new Date().toISOString(), // Use the current date and time
       summarizationResult: "", // Initialize the summarization result
+      summaryNote: "", // Blocknote of summary
       audioFileUrl: "" as string, // Fix the type error by explicitly casting to string
     });
 
@@ -141,10 +142,10 @@ export const create = mutation({
   }
 });
 
-export const saveSummarizationResult = mutation({
+export const saveSummaryNote = mutation({
   args: {
     id: v.id("documents"),
-    summarizationResult: v.string(),
+    summaryNote: v.string(),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -166,14 +167,14 @@ export const saveSummarizationResult = mutation({
     }
 
     const document = await ctx.db.patch(args.id, {
-      summarizationResult: args.summarizationResult,
+      summaryNote: args.summaryNote,
     });
 
     return document;
   },
 });
 
-export const getSummarizationResult = query({
+export const getSummaryNote = query({
   args: { id: v.id("documents") },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -194,7 +195,7 @@ export const getSummarizationResult = query({
       throw new Error("Unauthorized");
     }
 
-    return document.summarizationResult;
+    return document.summaryNote;
   },
 });
 
@@ -364,6 +365,8 @@ export const update = mutation({
     id: v.id("documents"),
     title: v.optional(v.string()),
     content: v.optional(v.string()),
+    summaryNote: v.optional(v.string()),
+    summarizationResult: v.optional(v.string()),
     coverImage: v.optional(v.string()),
     icon: v.optional(v.string()),
     isPublished: v.optional(v.boolean()),
