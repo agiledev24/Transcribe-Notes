@@ -76,9 +76,11 @@ body,
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -100,17 +102,20 @@ body,
 } */
 
 .animate-smooth-pulse {
-  animation: pulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045); /* Smoother entry and exit */
+  animation: pulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  /* Smoother entry and exit */
 }
 
 .animate-smooth-gentlePulse {
-  animation: gentlePulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045); /* Smoother entry and exit */
+  animation: gentlePulse 1.5s infinite cubic-bezier(0.6, -0.28, 0.735, 0.045);
+  /* Smoother entry and exit */
 }
 
 @layer base {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -122,6 +127,7 @@ body,
     transform-origin: center top;
     transform: translateZ(-1px) scale(2);
   }
+
   .page {
     position: relative;
     height: 150vh;
@@ -169,14 +175,17 @@ body,
     line-height: 1;
     user-select: none;
   }
+
   .TabsTrigger:first-child {
     border-top-left-radius: 6px;
   }
+
   .TabsTrigger:last-child {
     border-top-right-radius: 6px;
   }
-  .TabsTrigger:hover {
-  }
+
+  .TabsTrigger:hover {}
+
   .TabsTrigger[data-state="active"],
   .TabsTrigger[aria-selected="true"] {
     color: black;
@@ -207,9 +216,11 @@ body,
     justify-content: center;
     box-shadow: 0 2px 10px var(--black-a7);
   }
+
   .CheckboxRoot:hover {
     background-color: var(--violet-3);
   }
+
   .CheckboxRoot:focus {
     box-shadow: 0 0 0 2px black;
   }
@@ -241,4 +252,9 @@ body,
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.record-button {
+  position: relative;
+  left: 45%;
 }

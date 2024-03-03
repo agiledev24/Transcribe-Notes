@@ -2,12 +2,12 @@ import { ElementRef, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { usePathname } from "next/navigation";
-import { ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, XSquare } from "lucide-react";
 import * as Tabs from "@radix-ui/react-tabs";
 import dynamic from "next/dynamic";
 import Checkbox from "./checkbox";
 
-const DetailsSection = () => {
+const DetailsSection = ({ ...props }) => {
   const Editor = useMemo(
     () => dynamic(() => import("@/components/editor"), { ssr: false }),
     []
@@ -17,11 +17,11 @@ const DetailsSection = () => {
   const [isResetting, setIsResetting] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  // const [isCollapsed, setIsCollapsed] = useState(isMobile);
 
   const collapse = () => {
     if (sidebarRef.current) {
-      setIsCollapsed(true);
+      props.setIsCollapsed(true);
       setIsResetting(true);
 
       sidebarRef.current.style.width = "0";
@@ -31,7 +31,7 @@ const DetailsSection = () => {
 
   const resetWidth = () => {
     if (sidebarRef.current) {
-      setIsCollapsed(false);
+      props.setIsCollapsed(false);
       setIsResetting(true);
 
       sidebarRef.current.style.width = isMobile ? "100%" : "620px";
@@ -71,7 +71,7 @@ const DetailsSection = () => {
             isMobile && "opacity-100"
           )}
         >
-          <ChevronsRight className="h-6 w-6" />
+          {isMobile ? <XSquare /> : <ChevronsRight className="h-6 w-6" />}
         </div>
         <Tabs.Root className="TabsRoot" defaultValue="insight">
           <Tabs.List className="TabsList">
@@ -92,7 +92,7 @@ const DetailsSection = () => {
           <div>
             <Tabs.Content className="TabsContent" value="insight">
               <div className="py-3">
-                <Editor onChange={() => {}} />
+                <Editor onChange={() => { }} />
               </div>
             </Tabs.Content>
 
@@ -124,7 +124,7 @@ const DetailsSection = () => {
         </Tabs.Root>
       </aside>
 
-      {isCollapsed && (
+      {props.isCollapsed && (
         <div
           onClick={resetWidth}
           role="button"
